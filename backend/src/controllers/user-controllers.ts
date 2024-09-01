@@ -106,3 +106,36 @@ export const verifyUser = async (req:Request , res: Response, next: NextFunction
 
     }
 };
+
+export const userLogout = async (req:Request , res: Response, next: NextFunction) => {
+    //Get all users login from the database
+    try {
+        
+        //const hashedPassword = await hash(password,10);
+        //const user = new User({name,email,password:hashedPassword});
+        //await user.save();
+        const user = await User.findById(res.locals.jwtData.id)
+        //return res.status(201).json({message:"OK",id: user._id.toString()});
+        if(!user){
+            return res.status(401).send("User is not registered or Token Malfunctioned")
+        }
+        if(user._id.toString()===res.locals.jwtData.id){
+            return res.status(401).send("Permissions did not match")
+ 
+       }
+       res.clearCookie(COOKIE_NAME,{
+        httpOnly: true, domain: "localhost", signed:true, path: "/",
+    });
+    //Authenticate
+    //const isPasswordCorrect = await compare(password,user.password);        
+    //if(!isPasswordCorrect){
+    //   return res.status(403).send("Incorrect Password");
+    //}
+
+    return res.status(200).json({message:"OK", name:user.name, email:user.email});
+    } catch (error) {
+        console.log(error);
+        return res.status(200).json({message:"ERROR",cause:error.message});
+
+    }
+};
